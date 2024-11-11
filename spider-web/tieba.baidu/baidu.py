@@ -4,9 +4,6 @@ import csv
 import os
 import urllib.parse
 
-# 百度贴吧分类页面的URL
-url = "https://tieba.baidu.com/f/index/forumpark?cn=%E5%A8%B1%E4%B9%90%E6%98%8E%E6%98%9F%E8%AF%9D%E9%A2%98&ci=0&pcn=%E5%A8%B1%E4%B9%90%E6%98%8E%E6%98%9F&pci=0&ct=1&rn=20&pn=1"
-
 # 发送请求
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Safari/537.36"
@@ -22,7 +19,7 @@ def request_soup(url):
         return None
 
 
-def name_user_count(url, write_header=False):
+def name_user_count(url):
     soup = request_soup(url)
     forums = soup.select('.ba_info')  # 选择器可能需要调整
      # 提取每个分类的名称和用户数量
@@ -37,7 +34,6 @@ def name_user_count(url, write_header=False):
 def run_user_count_pagination_links(url):
     """获取分页链接"""
     soup = request_soup(url)
-    pagination_links = []
     # 获取分页链接
     for link in soup.select('.pagination a'):  # 替换为实际选择器
         href = link.get('href')
@@ -50,7 +46,6 @@ def run_user_count_pagination_links(url):
 def forumclass_link():
     url = "https://tieba.baidu.com/f/index/forumclass"
     soup = request_soup(url)
-    category_links = []
     # 找到分类链接的元素并提取 href 属性
     right_sec = soup.find(id="right-sec")
     if right_sec:
@@ -58,11 +53,12 @@ def forumclass_link():
             href = link.get('href')
             if href:
                 full_url = urllib.parse.urljoin("https://tieba.baidu.com/", href)
-                category_links.append(full_url)
                 print(f"采集: {full_url}")
                 run_user_count_pagination_links(full_url)
 
 
+# data = [['分类1', '1000'], ['分类2', '2000']]
+# write_to_csv(data)
 def write_to_csv(data, csv_file='baidu.csv'):
     """将抓取的数据写入 CSV 文件"""
     file_exists = os.path.isfile(csv_file)
@@ -72,8 +68,5 @@ def write_to_csv(data, csv_file='baidu.csv'):
         writer.writerows(data)
     print(f"数据已追加写入 {csv_file}")
 
-
 if __name__ == "__main__":
     forumclass_link()
-    # data = [['分类1', '1000'], ['分类2', '2000']]
-    # write_to_csv(data)
